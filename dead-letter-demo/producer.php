@@ -54,8 +54,14 @@ $channel->queue_bind($customerQueueName, $customerExchangeName, $customerRouteNa
 
 
 $data = [
-    'msg_id'   => session_create_id('msg'),
-    'order_id' => rand(1, 1000),
+    'msg_id'                => session_create_id('msg'),
+    'version'               => 1,
+    'create_time'           => time(),
+    'msg_body'              => ['order_id' => rand(1, 1000), 'shop_id' => rand(1, 100)],
+    'notify_url'            => 'http://127.0.0.1:18306/shop/notify',
+    'notify_rules'           => [5, 10, 15], // 通知规则， 每次间隔时间, 和通知次数
+    'notify_retries_number' => 0, // 重试的次数， 默认为0
+    'status'                => 1, // 消息的状态
 ];
 
 $msg = new AMQPMessage(json_encode($data), [

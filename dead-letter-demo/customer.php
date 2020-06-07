@@ -29,6 +29,20 @@ $channel->queue_bind($customerQueueName, $customerExchangeName, $customerRouteNa
 
 $channel->basic_consume($customerQueueName, '', false, false, false, false, function (AMQPMessage $message) {
     $data = json_decode($message->body, true);
+
+    // 递增投递次数
+    $data['notify_retries_number']++;
+
+    // 检查是否已达到最大投递次数
+    if ($data['notify_retries_number'] > count($data['notify_rules'])) {
+        // 记录消息到redis或数数据库
+
+        // 消息确认,消息会从队列中移除
+        $message->delivery_info['channel']->basic_ack($message->delivery_info['delivery_tag']);
+        return;
+    }
+
+    // 执行正常的业务逻辑
     var_dump($data);
 
     $message->delivery_info['channel']->basic_ack($message->delivery_info['delivery_tag']);
